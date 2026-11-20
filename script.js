@@ -192,15 +192,20 @@ document.addEventListener("DOMContentLoaded", () => {
     if (form && statusEl && submitBtn) {
         form.addEventListener("submit", async(e) => {
             e.preventDefault();
+            const visitorName = document.getElementById("full-name")?.value.trim() || "there";
+            const enquiryType = document.getElementById("enquiry-type")?.value || "gym tour";
+
             submitBtn.disabled = true;
             submitBtn.textContent = "SENDING REQUEST...";
             statusEl.className = "form-status";
             statusEl.textContent = "";
 
+            const confirmMsg = `✓ Request Confirmed, ${visitorName}! We've received your "${enquiryType}" request and our team will reach out within 2 hours to confirm your time.`;
+
             if (!SITE_CONFIG.web3FormsAccessKey) {
                 setTimeout(() => {
                     statusEl.className = "form-status success";
-                    statusEl.textContent = "Tour request received! (Demo Mode — add your Web3Forms key in script.js for live emails.)";
+                    statusEl.textContent = `${confirmMsg} (Demo Mode)`;
                     form.reset();
                     submitBtn.disabled = false;
                     submitBtn.textContent = "BOOK YOUR FREE GYM TOUR →";
@@ -210,7 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const formData = new FormData(form);
             formData.append("access_key", SITE_CONFIG.web3FormsAccessKey);
-            formData.append("subject", `New Lead — ${SITE_CONFIG.brandName}`);
+            formData.append("subject", `New Lead (${enquiryType}) — ${SITE_CONFIG.brandName}`);
 
             try {
                 const res = await fetch("https://api.web3forms.com/submit", {
@@ -220,7 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const data = await res.json();
                 if (data.success) {
                     statusEl.className = "form-status success";
-                    statusEl.textContent = "You're booked! Our team will confirm your tour time shortly.";
+                    statusEl.textContent = confirmMsg;
                     form.reset();
                 } else {
                     statusEl.className = "form-status error";
@@ -228,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             } catch {
                 statusEl.className = "form-status error";
-                statusEl.textContent = "Network error. Please reach out via WhatsApp.";
+                statusEl.textContent = "Network error. Please reach out directly via WhatsApp.";
             }
             finally {
                 submitBtn.disabled = false;
@@ -241,4 +246,25 @@ document.addEventListener("DOMContentLoaded", () => {
     const yearEl = document.getElementById("footer-year");
     if (yearEl)
         yearEl.textContent = new Date().getFullYear();
+
+    // 6. Timetable Quick-Select (Distinguishes Group Trial from Gym Tour)
+    const enquirySelect = document.getElementById("enquiry-type");
+    const goalsInput = document.getElementById("goals");
+
+    document.querySelectorAll(".tt-link[data-session]").forEach((link) => {
+        link.addEventListener("click", () => {
+            if (enquirySelect)
+                enquirySelect.value = "Join a Group Trial Session";
+            if (goalsInput) {
+                goalsInput.value = `I'd like to book a group trial for: ${link.dataset.session}`;
+            }
+        });
+    });
+
+    document.querySelectorAll(".tt-link[data-enquiry]").forEach((link) => {
+        link.addEventListener("click", () => {
+            if (enquirySelect)
+                enquirySelect.value = link.dataset.enquiry;
+        });
+    });
 });
