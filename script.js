@@ -246,25 +246,46 @@ document.addEventListener("DOMContentLoaded", () => {
     const yearEl = document.getElementById("footer-year");
     if (yearEl)
         yearEl.textContent = new Date().getFullYear();
-
-    // 6. Timetable Quick-Select (Distinguishes Group Trial from Gym Tour)
+    // 6. Timetable Quick-Select & Dynamic Submit Button
     const enquirySelect = document.getElementById("enquiry-type");
     const goalsInput = document.getElementById("goals");
+    const formSubmitBtn = document.getElementById("submit-btn");
+
+    const buttonLabels = {
+        "Book a Free Gym Tour": "BOOK YOUR FREE GYM TOUR →",
+        "Enquire About Personal Training": "ENQUIRE ABOUT PERSONAL TRAINING →",
+        "Enquire About a Group Session": "ENQUIRE ABOUT SESSION →",
+        "General Enquiry": "SEND ENQUIRY →"
+    };
+
+    const syncButtonLabel = () => {
+        if (formSubmitBtn && enquirySelect) {
+            formSubmitBtn.textContent = buttonLabels[enquirySelect.value] || "BOOK YOUR FREE GYM TOUR →";
+        }
+    };
+
+    if (enquirySelect) {
+        enquirySelect.addEventListener("change", syncButtonLabel);
+    }
 
     document.querySelectorAll(".tt-link[data-session]").forEach((link) => {
         link.addEventListener("click", () => {
-            if (enquirySelect)
-                enquirySelect.value = "Join a Group Trial Session";
+            if (enquirySelect) {
+                enquirySelect.value = "Enquire About a Group Session";
+                syncButtonLabel();
+            }
             if (goalsInput) {
-                goalsInput.value = `I'd like to book a group trial for: ${link.dataset.session}`;
+                goalsInput.value = `I'd like to enquire about: ${link.dataset.session}`;
             }
         });
     });
 
     document.querySelectorAll(".tt-link[data-enquiry]").forEach((link) => {
         link.addEventListener("click", () => {
-            if (enquirySelect)
+            if (enquirySelect) {
                 enquirySelect.value = link.dataset.enquiry;
+                syncButtonLabel();
+            }
         });
     });
 });
